@@ -1,9 +1,13 @@
 Django==1.7.1
+PyJWT==0.3.0
 argparse==1.2.1
 dj-database-url==0.3.0
 dj-static==0.0.6
+django-grip==1.1.1
 django-toolbelt==0.0.1
+gripcontrol==1.2.0
 gunicorn==19.1.1
 psycopg2==2.5.4
+pubcontrol==1.0.4
 static3==0.5.1
 wsgiref==0.1.2

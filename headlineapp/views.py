@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from django.http import HttpResponse
 
-# Create your views here.
+def base(request):
+	return HttpResponse('base')
+
+def item(request, headline_id):
+	return HttpResponse('item %s' % headline_id)

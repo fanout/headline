@@ -23,7 +23,7 @@ def item(request, headline_id):
         if ws.is_opening():
             ws.accept()
             ws.subscribe('headline-%s' % headline_id)
-        if ws.can_recv():
+        while ws.can_recv():
             message = ws.recv()
             if message is None:
                 ws.close()

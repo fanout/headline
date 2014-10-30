@@ -47,6 +47,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_grip.GripMiddleware',
 )
 
 ROOT_URLCONF = 'headline.urls'
@@ -102,3 +103,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+from django_grip import parse_grip_uri
+
+GRIP_PROXIES = [parse_grip_uri(os.environ['GRIP_URL'])]

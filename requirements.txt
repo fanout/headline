@@ -3,7 +3,7 @@ PyJWT==0.3.0
 argparse==1.2.1
 dj-database-url==0.3.0
 dj-static==0.0.6
-django-grip==1.1.1
+django-grip==1.2.0
 django-toolbelt==0.0.1
 gripcontrol==1.2.0
 gunicorn==19.1.1

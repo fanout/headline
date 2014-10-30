@@ -1,18 +1,20 @@
 import json
-from django.http import HttpResponse, HttpResponseNotAllowed
+import calendar
+from django.http import HttpResponse, HttpResponseNotModified, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from gripcontrol import HttpResponseFormat, HttpStreamFormat, WebSocketMessageFormat
 from django_grip import set_hold_longpoll, set_hold_stream, publish
 from headlineapp.models import Headline
 
+def _json_response(data):
+    body = json.dumps(data, indent=4) + '\n' # pretty print
+    return HttpResponse(body, content_type='application/json')
+
 def base(request):
     if request.method == 'POST':
-        type = request.POST.get('type')
-        title = request.POST.get('title', '')
-        text = request.POST.get('text')
-        h = Headline(type=type, title=title, text=text)
+        h = Headline(type='none', title='', text='')
         h.save()
-        return HttpResponse(json.dumps(h.to_data(), indent=4))
+        return _json_response(h.to_data())
     else:
         return HttpResponseNotAllowed(['POST'])
 
@@ -28,14 +30,46 @@ def item(request, headline_id):
             if message is None:
                 ws.close()
                 break
+        return HttpResponse()
     elif request.method == 'GET':
-        return HttpResponse(json.dumps(h.to_data(), indent=4))
+        if request.META.get('HTTP_ACCEPT') == 'text/event-stream':
+            resp = HttpResponse(content_type='text/event-stream')
+            set_hold_stream(resp, 'headline-%s' % headline_id)
+            return resp
+        else:
+            wait = request.META.get('HTTP_WAIT')
+            if wait:
+                wait = int(wait)
+                if wait < 1:
+                    wait = None
+                if wait > 300:
+                    wait = 300
+            inm = request.META.get('HTTP_IF_NONE_MATCH')
+            etag = '"%s"' % calendar.timegm(h.date.utctimetuple())
+            if inm == etag:
+                resp = HttpResponseNotModified()
+                if wait:
+                    set_hold_longpoll(resp, 'headline-%s' % headline_id, timeout=wait)
+            else:
+                resp = _json_response(h.to_data())
+            resp['ETag'] = etag
+            return resp
     elif request.method == 'PUT':
-        h.type = request.POST.get('type')
-        h.title = request.POST.get('title', '')
-        h.text = request.POST.get('text')
+        hdata = json.loads(request.read())
+        h.type = hdata['type']
+        h.title = hdata.get('title', '')
+        h.text = hdata.get('text', '')
         h.save()
+        hdata = h.to_data()
+        hjson = json.dumps(hdata)
+        etag = '"%s"' % calendar.timegm(h.date.utctimetuple())
+        rheaders = {'ETag': etag}
+        hpretty = json.dumps(hdata, indent=4) + '\n'
         formats = list()
-        formats.append(WebSocketMessageFormat(json.dumps(h.to_data())))
+        formats.append(HttpResponseFormat(body=hpretty, headers=rheaders))
+        formats.append(HttpStreamFormat('event: update\ndata: %s\n\n' % hjson))
+        formats.append(WebSocketMessageFormat(hjson))
         publish('headline-%s' % headline_id, formats)
-        return HttpResponse(json.dumps(h.to_data(), indent=4))
+        return _json_response(hdata)
+    else:
+        return HttpResponseNotAllowed(['GET', 'PUT'])

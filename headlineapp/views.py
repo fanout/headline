@@ -70,6 +70,8 @@ def item(request, headline_id):
         formats.append(HttpStreamFormat('event: update\ndata: %s\n\n' % hjson))
         formats.append(WebSocketMessageFormat(hjson))
         publish('headline-%s' % headline_id, formats)
-        return _json_response(hdata)
+        resp = _json_response(hdata)
+        resp['ETag'] = etag
+        return resp
     else:
         return HttpResponseNotAllowed(['GET', 'PUT'])

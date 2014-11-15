@@ -63,7 +63,7 @@ def item(request, headline_id):
         hdata = h.to_data()
         hjson = json.dumps(hdata)
         etag = '"%s"' % calendar.timegm(h.date.utctimetuple())
-        rheaders = {'ETag': etag}
+        rheaders = {'Content-Type': 'application/json', 'ETag': etag}
         hpretty = json.dumps(hdata, indent=4) + '\n'
         formats = list()
         formats.append(HttpResponseFormat(body=hpretty, headers=rheaders))

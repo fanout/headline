@@ -104,6 +104,6 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-from django_grip import parse_grip_uri
+from gripcontrol import parse_grip_uri
 
 GRIP_PROXIES = [parse_grip_uri(os.environ['GRIP_URL'])]

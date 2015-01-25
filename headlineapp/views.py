@@ -34,7 +34,7 @@ def item(request, headline_id):
     elif request.method == 'GET':
         if request.META.get('HTTP_ACCEPT') == 'text/event-stream':
             resp = HttpResponse(content_type='text/event-stream')
-            set_hold_stream(resp, 'headline-%s' % headline_id)
+            set_hold_stream(request, 'headline-%s' % headline_id)
             return resp
         else:
             wait = request.META.get('HTTP_WAIT')
@@ -49,7 +49,7 @@ def item(request, headline_id):
             if inm == etag:
                 resp = HttpResponseNotModified()
                 if wait:
-                    set_hold_longpoll(resp, 'headline-%s' % headline_id, timeout=wait)
+                    set_hold_longpoll(request, 'headline-%s' % headline_id, timeout=wait)
             else:
                 resp = _json_response(h.to_data())
             resp['ETag'] = etag

@@ -1,8 +1,10 @@
 import json
 import calendar
-from django.http import HttpResponse, HttpResponseNotModified, HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseNotModified, \
+	HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
-from gripcontrol import HttpResponseFormat, HttpStreamFormat, WebSocketMessageFormat
+from gripcontrol import HttpResponseFormat, HttpStreamFormat, \
+	WebSocketMessageFormat
 from django_grip import set_hold_longpoll, set_hold_stream, publish
 from headlineapp.models import Headline
 
@@ -24,7 +26,7 @@ def item(request, headline_id):
         ws = request.wscontext
         if ws.is_opening():
             ws.accept()
-            ws.subscribe('headline-%s' % headline_id)
+            ws.subscribe(headline_id)
         while ws.can_recv():
             message = ws.recv()
             if message is None:
@@ -34,7 +36,7 @@ def item(request, headline_id):
     elif request.method == 'GET':
         if request.META.get('HTTP_ACCEPT') == 'text/event-stream':
             resp = HttpResponse(content_type='text/event-stream')
-            set_hold_stream(request, 'headline-%s' % headline_id)
+            set_hold_stream(request, headline_id)
             return resp
         else:
             wait = request.META.get('HTTP_WAIT')
@@ -49,7 +51,7 @@ def item(request, headline_id):
             if inm == etag:
                 resp = HttpResponseNotModified()
                 if wait:
-                    set_hold_longpoll(request, 'headline-%s' % headline_id, timeout=wait)
+                    set_hold_longpoll(request, headline_id, timeout=wait)
             else:
                 resp = _json_response(h.to_data())
             resp['ETag'] = etag
@@ -69,7 +71,7 @@ def item(request, headline_id):
         formats.append(HttpResponseFormat(body=hpretty, headers=rheaders))
         formats.append(HttpStreamFormat('event: update\ndata: %s\n\n' % hjson))
         formats.append(WebSocketMessageFormat(hjson))
-        publish('headline-%s' % headline_id, formats)
+        publish(headline_id, formats)
         resp = _json_response(hdata)
         resp['ETag'] = etag
         return resp

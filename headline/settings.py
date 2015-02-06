@@ -107,3 +107,5 @@ STATICFILES_DIRS = (
 from gripcontrol import parse_grip_uri
 
 GRIP_PROXIES = [parse_grip_uri(os.environ['GRIP_URL'])]
+GRIP_PROXY_REQUIRED = True
+GRIP_PREFIX = 'headline-'

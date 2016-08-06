@@ -1,7 +1,8 @@
 import json
 import calendar
-from django.http import HttpResponse, HttpResponseNotModified, \
-	HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseRedirect, \
+	HttpResponseNotModified, HttpResponseNotAllowed
+from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from gripcontrol import HttpResponseFormat, HttpStreamFormat, \
 	WebSocketMessageFormat
@@ -77,3 +78,6 @@ def item(request, headline_id):
         return resp
     else:
         return HttpResponseNotAllowed(['GET', 'PUT'])
+
+def item_redirect(request, headline_id):
+	return HttpResponseRedirect(reverse('item', args=[headline_id]), status=308)

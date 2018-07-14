@@ -1,11 +1,10 @@
 import json
 import calendar
 from django.http import HttpResponse, HttpResponseRedirect, \
-	HttpResponseNotModified, HttpResponseNotAllowed
-from django.core.urlresolvers import reverse
+    HttpResponseNotModified, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from gripcontrol import HttpResponseFormat, HttpStreamFormat, \
-	WebSocketMessageFormat
+    WebSocketMessageFormat
 from django_grip import set_hold_longpoll, set_hold_stream, publish
 from headlineapp.models import Headline
 
@@ -23,11 +22,14 @@ def base(request):
 
 def item(request, headline_id):
     h = get_object_or_404(Headline, pk=headline_id)
+
+    hchannel = str(headline_id)
+
     if request.wscontext:
         ws = request.wscontext
         if ws.is_opening():
             ws.accept()
-            ws.subscribe(headline_id)
+            ws.subscribe(hchannel)
         while ws.can_recv():
             message = ws.recv()
             if message is None:
@@ -37,7 +39,7 @@ def item(request, headline_id):
     elif request.method == 'GET':
         if request.META.get('HTTP_ACCEPT') == 'text/event-stream':
             resp = HttpResponse(content_type='text/event-stream')
-            set_hold_stream(request, headline_id)
+            set_hold_stream(request, hchannel)
             return resp
         else:
             wait = request.META.get('HTTP_WAIT')
@@ -52,32 +54,34 @@ def item(request, headline_id):
             if inm == etag:
                 resp = HttpResponseNotModified()
                 if wait:
-                    set_hold_longpoll(request, headline_id, timeout=wait)
+                    set_hold_longpoll(request, hchannel, timeout=wait)
             else:
                 resp = _json_response(h.to_data())
             resp['ETag'] = etag
             return resp
     elif request.method == 'PUT':
         hdata = json.loads(request.read())
+
         h.type = hdata['type']
         h.title = hdata.get('title', '')
         h.text = hdata.get('text', '')
         h.save()
         hdata = h.to_data()
+
         hjson = json.dumps(hdata)
         etag = '"%s"' % calendar.timegm(h.date.utctimetuple())
         rheaders = {'Content-Type': 'application/json', 'ETag': etag}
         hpretty = json.dumps(hdata, indent=4) + '\n'
-        formats = list()
+
+        formats = []
         formats.append(HttpResponseFormat(body=hpretty, headers=rheaders))
         formats.append(HttpStreamFormat('event: update\ndata: %s\n\n' % hjson))
         formats.append(WebSocketMessageFormat(hjson))
-        publish(headline_id, formats)
+
+        publish(hchannel, formats)
+
         resp = _json_response(hdata)
         resp['ETag'] = etag
         return resp
     else:
         return HttpResponseNotAllowed(['GET', 'PUT'])
-
-def item_redirect(request, headline_id):
-	return HttpResponseRedirect(reverse('item', args=[headline_id]), status=308)

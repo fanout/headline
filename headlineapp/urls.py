@@ -1,8 +1,7 @@
-from django.conf.urls import patterns, url
-from headlineapp import views
+from django.urls import path
+from . import views
 
-urlpatterns = patterns('',
-    url(r'^$', views.base, name='base'),
-    url(r'^(?P<headline_id>\d+)/$', views.item, name='item'),
-    url(r'^(?P<headline_id>\d+)$', views.item_redirect, name='item_redirect'),
-)
+urlpatterns = [
+    path('', views.base, name='base'),
+    path('<int:headline_id>/', views.item, name='item'),
+]

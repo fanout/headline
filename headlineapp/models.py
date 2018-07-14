@@ -7,7 +7,7 @@ class Headline(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     def to_data(self):
-        out = dict()
+        out = {}
         out['id'] = str(self.id)
         out['type'] = self.type
         if self.title:
@@ -16,5 +16,5 @@ class Headline(models.Model):
         out['text'] = self.text
         return out
 
-    def __unicode__(self):
-        return u'%s: %s' % (self.type, self.text[:100])
+    def __str__(self):
+        return '%s: %s' % (self.type, self.text[:100])

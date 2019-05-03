@@ -8,10 +8,12 @@ django-grip==1.8.0
 gripcontrol==3.2.1
 gunicorn==19.9.0
 idna==2.7
+psycopg2==2.8.2
 pubcontrol==2.4.2
 PyJWT==1.6.4
 pytz==2018.5
 requests==2.19.1
 six==1.11.0
+sqlparse==0.3.0
 static3==0.7.0
 urllib3==1.23

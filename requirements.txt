@@ -2,7 +2,7 @@ certifi==2018.4.16
 chardet==3.0.4
 dj-database-url==0.5.0
 dj-static==0.0.6
-Django==2.2.8
+Django==2.2.22
 django-dotenv==1.4.2
 django-grip==1.8.0
 gripcontrol==3.2.1

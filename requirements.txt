@@ -10,7 +10,7 @@ gunicorn==19.9.0
 idna==2.7
 psycopg2==2.8.2
 pubcontrol==2.4.2
-PyJWT==1.6.4
+PyJWT==2.4.0
 pytz==2018.5
 requests==2.22.0
 six==1.11.0

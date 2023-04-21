@@ -14,6 +14,6 @@ PyJWT==1.6.4
 pytz==2018.5
 requests==2.22.0
 six==1.11.0
-sqlparse==0.3.0
+sqlparse==0.4.4
 static3==0.7.0
 urllib3==1.24.2
